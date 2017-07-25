@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>RPM Demo Webapp</title>
+	<script src="index.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/purecss@0.6.2/build/pure-min.css" integrity="sha384-UQiGfs9ICog+LwheBSRCt1o5cbyKIHbwjWscjemyBMT9YCUMZffs6UqUTd0hObXD" crossorigin="anonymous">
+	<link rel='stylesheet' href='index.css' type='text/css'>
+</head>
+<body>
+<div class='content'>
+<center><h1>RPM Demo Webapp</h1></center>
+
+<center>
+    <h2>Enabled: <span id='enabled'></span></h2><a id='enabled-button' class='pure-button'>Check Again</a>
+</center>
+
+<br/><br/>
+
+<center>
+    <label for='name'><input type='text' name='name' id='name'></label>
+    <a id='hello-button' class='pure-button pure-button-primary'>Greetings!</a>
+    <div id='hello'></div>
+</center>
+
+<br/><br/>
+
+<div id='stuff'>
+	<div><a id='stuff-button' class='pure-button'>Do Stuff</a></div>
+	<br/>
+	<table class="pure-table">
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+				<th>Enabled</th>
+			</tr>
+		</thead>
+		<tbody id='stuff-body'>
+		</tbody>
+	</table>
+</div>
+
+</div> <!-- .content -->
+<script>
+	// include bootstrap code in here not index.js
+	document.addEventListener('DOMContentLoaded', function(){
+		document.getElementById('hello-button').addEventListener('click', hello);
+        document.getElementById('stuff-button').addEventListener('click', stuff);
+        document.getElementById('enabled-button').addEventListener('click', loadStatus);
+		loadStatus();
+	});
+</script>
+
+</body>
+</html>

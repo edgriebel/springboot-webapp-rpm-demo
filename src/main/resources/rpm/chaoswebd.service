@@ -1,0 +1,12 @@
+[Unit]
+Description=Demo SpringBoot Web Application to demonstrate creating RPM
+
+[Service]
+ExecStart=/usr/local/sbin/rpmdemo/webapp/bin/launch_webapp.sh
+Type=idle
+# Note that this user needs to be defined on the system
+# Hardcode login name so that we fail-fast if the user not configured
+User=webuser
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,116 @@
+buildscript {
+    repositories {
+        mavenCentral()
+	jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE")
+        classpath( "com.netflix.nebula:gradle-ospackage-plugin:4.4.0")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'jacoco'
+
+// documentation: https://github.com/nebula-plugins/gradle-ospackage-plugin/wiki/Usage-Example
+// This assembles a staging directory, hand crafts from config files, then builds an RPM.
+apply plugin: 'nebula.ospackage'
+
+build.dependsOn bootRepackage
+build.dependsOn buildRpm
+buildRpm.dependsOn bootRepackage
+
+archivesBaseName = projectName
+version = projectVersion
+group = 'demogroup'
+
+springBoot {
+	buildInfo()
+}
+
+bootRepackage {
+    mainClass = 'com.edgriebel.rpmdemo.Application'
+}
+
+repositories {
+	// configure(gradle.ext.payxDefaultBuildscriptRepositories)
+        mavenCentral()
+	jcenter()
+}
+
+test {
+	// it would be nice to push test profiles here to e.g. disable actuator
+	// spring.profiles.active=test 
+}
+
+// note that this is hardcoded for RHES rpm
+ospackage {
+	addParentDirs false
+	arch 'i386'
+	os LINUX
+
+	from('build/libs') { // build/libs shouldn't be hardcoded
+		addParentDirs  false
+		into '/usr/local/sbin/rpmdemo/webapp/'
+		include '*.jar'
+		rename '(.+)\\.201.*(.jar)', '$1$2'
+		// user 'webuser'  // set to desired username
+	}
+
+	from('src/main/resources/rpm') { // src/main/resources/rpm shouldn't be hardcoded
+		addParentDirs  false
+		into '/usr/local/sbin/rpmdemo/webapp/bin'
+		include '*.sh'
+		// user 'webuser' // set to desired username
+		fileMode 0555
+	}
+
+	from('src/main/resources/rpm') { // src/main/resources/rpm shouldn't be hardcoded
+		addParentDirs  false
+		into '/usr/lib/systemd/system'
+		include 'rpmdemowebd.service'
+		// user 'webuser' // set to desired username
+	}
+}
+
+buildRpm {
+	// note that these don't seem to have an effect on the RPM.
+	// changing this to "requires" forces YUM to download 
+	// the package, but since Oracle JDK is not on yum repos, it 
+	// will fail, so we keep these as placholders/reminders
+	recommends 'java-1.8.0-openjdk'
+	recommends 'jdk1.8.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    // compile() is shorthand for [compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.+'] from e.g. mavencentral
+    // tag::jetty[]
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+    // end::jetty[]
+    // tag::actuator[]
+    // was trying to use "runtime" to not run these when testing, but DNW
+    runtime("org.springframework.boot:spring-boot-starter-actuator")
+    runtime("org.springframework.boot:spring-boot-actuator-docs")
+    // end::actuator[]
+
+    compile("io.springfox:springfox-swagger2:2.+")
+    compile("io.springfox:springfox-swagger-ui:2.+")
+
+    testCompile("junit:junit")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("org.springframework.security:spring-security-test")
+
+    compile "org.springframework.security:spring-security-web",
+            "org.springframework.security:spring-security-config"
+}
+
+// vim: filetype=groovy
